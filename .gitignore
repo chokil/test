@@ -1,0 +1,6 @@
+node_modules/
+dist/
+
+# ツールが自動生成するローカルファイル
+data/
+src/**/CLAUDE.md

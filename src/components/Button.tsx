@@ -1,14 +1,11 @@
 import React from 'react';
+import { cn } from './cn';
 
-interface ButtonProps {
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /**
-   * ボタンのテキスト
+   * ボタンのテキスト(children を指定した場合は children が優先される)
    */
-  label: string;
-  /**
-   * クリック時のハンドラー
-   */
-  onClick?: () => void;
+  label?: React.ReactNode;
   /**
    * ボタンのバリアント
    */
@@ -18,46 +15,61 @@ interface ButtonProps {
    */
   size?: 'small' | 'medium' | 'large';
   /**
-   * 無効化フラグ
+   * ボタンの type 属性(フォーム内での意図しない送信を防ぐため既定は 'button')
    */
-  disabled?: boolean;
+  type?: 'button' | 'submit' | 'reset';
 }
+
+const baseStyles = 'rounded font-semibold transition-colors duration-200 focus:outline-none focus:ring-2';
+
+const variantStyles = {
+  primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
+  secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
+  danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+};
+
+const sizeStyles = {
+  small: 'px-3 py-1.5 text-sm',
+  medium: 'px-4 py-2 text-base',
+  large: 'px-6 py-3 text-lg',
+};
 
 /**
  * カスタマイズ可能なボタンコンポーネント
+ * ref と、className を含むネイティブ button の props をそのまま受け付ける
  */
-export const Button: React.FC<ButtonProps> = ({
-  label,
-  onClick,
-  variant = 'primary',
-  size = 'medium',
-  disabled = false,
-}) => {
-  const baseStyles = 'rounded font-semibold transition-colors duration-200 focus:outline-none focus:ring-2';
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      label,
+      children,
+      onClick,
+      variant = 'primary',
+      size = 'medium',
+      disabled = false,
+      type = 'button',
+      className,
+      ...rest
+    },
+    ref,
+  ) => {
+    const disabledStyles = disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer';
 
-  const variantStyles = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
-    secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
-    danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
-  };
+    return (
+      <button
+        {...rest}
+        ref={ref}
+        type={type}
+        className={cn(baseStyles, variantStyles[variant], sizeStyles[size], disabledStyles, className)}
+        onClick={disabled ? undefined : onClick}
+        disabled={disabled}
+      >
+        {children ?? label}
+      </button>
+    );
+  },
+);
 
-  const sizeStyles = {
-    small: 'px-3 py-1.5 text-sm',
-    medium: 'px-4 py-2 text-base',
-    large: 'px-6 py-3 text-lg',
-  };
-
-  const disabledStyles = disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer';
-
-  return (
-    <button
-      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${disabledStyles}`}
-      onClick={disabled ? undefined : onClick}
-      disabled={disabled}
-    >
-      {label}
-    </button>
-  );
-};
+Button.displayName = 'Button';
 
 export default Button;
